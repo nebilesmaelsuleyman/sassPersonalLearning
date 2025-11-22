@@ -1,12 +1,13 @@
 import CompanionCard from '@/components/CompanionCard'
 import CompanionList from '@/components/CompanionList'
-import React from 'react'
+import { recentSessions } from '@/constants'
+
 
 const Page = () => {
   return (
     <main>
       <h1>Popular Companions </h1>
-      <section className='home-section'>
+      <section className="flex gap-4">
         <CompanionCard
           id="123"
           name="Neural The Brainy Explorer"
@@ -23,7 +24,7 @@ const Page = () => {
           topic="Neural Networks f the Brain"
           subject=" science"
           duration={45}
-          color='#ffda6e'
+          color='green'
       
 
         />
@@ -33,13 +34,18 @@ const Page = () => {
           topic="Neural Networks f the Brain"
           subject=" science"
           duration={45}
-          color='#ffda6e'
-      
-
+          color='#blue'
         />
+
       </section>
+
       <section className='home-section'>
-        <CompanionList/>
+        <CompanionList 
+        title='Recently completed sessions'
+        companions={recentSessions}
+        className='w-2/3 max-lg:w-full'
+        
+        />
 
       </section>
       </main>

@@ -1,8 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap");
-/* @import "tw-animate-css"; */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -142,7 +140,7 @@ body {
 
 @layer components {
   .home-section {
-    @apply flex gap-4 justify-between items-start w-full max-lg:flex-col-reverse max-lg:items-center;
+    @apply flex gap-4 justify-between items-start w-full;
   }
   .companions-grid {
     @apply flex flex-wrap gap-4 w-full max-md:justify-center;

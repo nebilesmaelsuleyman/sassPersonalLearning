@@ -16,7 +16,7 @@ const CompanionCard = ({id, name ,subject,duration,topic ,color}:CompanionCardPr
         <div className='subject-badge'>{subject}</div>
         <div className='flex justify-between items-center'>
               <button className='companion-bookmark'>  
-              <Image src='/icons/bookmark.svg' alt= 'image'></Image>
+              <Image src='/icons/bookmark.svg' alt= 'image' width={13.5} height={13.5}></Image>
               </button>
         </div>
         <h2 className='text-2xl font-bold'>{name}</h2>
