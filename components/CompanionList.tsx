@@ -60,7 +60,10 @@ const CompanionList = ({title, companions, className}:companionsListprops) => {
 
       </TableCell>
       <TableCell className={undefined}>
-        <p>{companion.duration}</p>
+        <div className='flex items-center justify-center '>
+        <p className='text-2xl'>{companion.duration}</p>
+        <span className='max-md:hidden'>min</span>
+        </div>
       </TableCell>
       </TableRow>
       

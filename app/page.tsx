@@ -1,11 +1,12 @@
 import CompanionCard from '@/components/CompanionCard'
 import CompanionList from '@/components/CompanionList'
 import { recentSessions } from '@/constants'
-
+import NavBar from '@/components/NavBar'
 
 const Page = () => {
   return (
     <main>
+      <NavBar/>
       <h1>Popular Companions </h1>
       <section className="flex gap-4">
         <CompanionCard
@@ -15,8 +16,6 @@ const Page = () => {
           subject=" science"
           duration={45}
           color='#ffda6e'
-      
-
         />
         <CompanionCard
           id="133"
