@@ -6,7 +6,7 @@ import CTA from '@/components/CTA'
 const Page = () => {
   return (
     <main>
-      <NavBar/>
+      
       <h1>Popular Companions </h1>
       <section className="flex gap-4">
         <CompanionCard
