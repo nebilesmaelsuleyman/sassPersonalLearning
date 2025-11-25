@@ -2,7 +2,7 @@ import CompanionCard from '@/components/CompanionCard'
 import CompanionList from '@/components/CompanionList'
 import { recentSessions } from '@/constants'
 import NavBar from '@/components/NavBar'
-
+import CTA from '@/components/CTA'
 const Page = () => {
   return (
     <main>
@@ -45,7 +45,7 @@ const Page = () => {
         className='w-2/3 max-lg:w-full'
         
         />
-
+        <CTA/>
       </section>
       </main>
     
