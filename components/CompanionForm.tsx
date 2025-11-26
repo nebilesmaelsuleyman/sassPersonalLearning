@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { subjects } from "@/constants";
-
+import { createCompanion } from "@/lib/actions/companion_action";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,6 +26,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { redirect } from "next/navigation";
 
 const formSchema = z.object({
   topic: z.string(),
@@ -49,8 +50,16 @@ const CompanionForm = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data);
+  const onSubmit =async  (data: z.infer<typeof formSchema>) => {
+    const companion = await createCompanion(data);
+
+    if (companion) {
+      redirect (`/companions/${companion.id}`);
+    }else{
+      console.log("Companion creation failed");
+      redirect('/')
+    }
+
   };
 
   return (
