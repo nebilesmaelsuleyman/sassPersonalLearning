@@ -1,6 +1,6 @@
 'use client'
 
-import { cn, getSubjectColor } from '@/lib/utils'
+import { cn, getSubjectColor ,configureAssistant } from '@/lib/utils'
 import {vapi} from "@/lib/vapi-sdk";
 import React from 'react'
 
@@ -37,7 +37,9 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
         const onCallStart =()=> setCallstatus(CallStatus.ACTIVE);
         const onCallEnd =()=> setCallstatus(CallStatus.FINISHED);
 
-        const onMessage= ()=>{}
+        const onMessage= (Message)=>{
+            
+        }
         const onSpeechStart= ()=>setIsSpeaking(true)
         const onSpeechEnd= ()=> setIsSpeaking(false)
 
@@ -68,9 +70,25 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
             setIsMuted(!isMuted);
         }
 
-const handleDisconnect= async ()=>{}
+const handleDisconnect= async ()=>{
+    setCallstatus(CallStatus.FINISHED);
+    vapi.stop()
+}
 
-const handleCall = async ()=>{}
+const handleCall = async ()=>{
+    setCallstatus(CallStatus.CONNECTING);
+
+    const assistantOverrides ={
+        variableValues:{subject, topic, style},
+        clientMessages:['transcript'],
+        serverMessages:[]
+
+    } 
+    // @ts-expect-error
+    vapi.start(configureAssistant(voice, style), assistantOverrides);
+
+
+}
 
     return (
         <section className='flex flex-col h-[70vh]'>
@@ -106,6 +124,13 @@ const handleCall = async ()=>{}
                     </button>
 
             </div>
+        </section>
+        <section className='transcript'>
+            <div className='transcript-message no-scrollbar'>
+                Messages
+            </div>
+            <div className='transcript-fade'></div>
+
         </section>
     </section>
     )
