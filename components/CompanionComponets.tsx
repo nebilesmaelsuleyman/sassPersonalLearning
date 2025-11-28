@@ -21,7 +21,7 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
     const [isSpeaking, setIsSpeaking]= useState(false);
     const lottiRef= useRef<LottieRefCurrentProps>(null);
     const [isMuted, setIsMuted]= useState(false);
-
+    const [messages, setMessages]= useState([]);
      useEffect(()=>{
         if(lottiRef){
             if(isSpeaking){
@@ -31,38 +31,43 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
             }
         }
 
-     },[isSpeaking, lottiRef.current?.play()])
+     },[isSpeaking])
 
-    useEffect(()=>{
-        const onCallStart =()=> setCallstatus(CallStatus.ACTIVE);
-        const onCallEnd =()=> setCallstatus(CallStatus.FINISHED);
+   useEffect(() => {
+    const onCallStart = () => setCallstatus(CallStatus.ACTIVE);
+    const onCallEnd = () => setCallstatus(CallStatus.FINISHED);
 
-        const onMessage= (Message)=>{
-            
+    const onMessage = (message) => {
+        if (message.type === "transcript" && message.final === true) {
+            const newMessage = {
+                role: message.role,
+                content: message.transcript,
+            };
+            setMessages((prev) => [...prev, newMessage]);
         }
-        const onSpeechStart= ()=>setIsSpeaking(true)
-        const onSpeechEnd= ()=> setIsSpeaking(false)
+    };
 
-        const onError=(error)=>console.log('error',error)
+    const onSpeechStart = () => setIsSpeaking(true);
+    const onSpeechEnd = () => setIsSpeaking(false);
+    const onError = (error) => console.log("error", error);
 
-        vapi.on('call-start',onCallStart)
-        vapi.on('call-end',onCallEnd)
-        vapi.on('message', onMessage)
-        vapi.on('speech-start', onSpeechStart)
-        vapi.on('speech-end', onSpeechEnd)
-        vapi.on('error', onError)
+    vapi.on("call-start", onCallStart);
+    vapi.on("call-end", onCallEnd);
+    vapi.on("message", onMessage);
+    vapi.on("speech-start", onSpeechStart);
+    vapi.on("speech-end", onSpeechEnd);
+    vapi.on("error", onError);
 
-        return()=>{
-              vapi.on('call-start',onCallStart)
-        vapi.off('call-end',onCallEnd)
-        vapi.off('message', onMessage)
-        vapi.off('speech-start', onSpeechStart)
-        vapi.off('speech-end', onSpeechEnd)
-        vapi.off('error', onError)
+    return () => {
+        vapi.off("call-start", onCallStart);
+        vapi.off("call-end", onCallEnd);
+        vapi.off("message", onMessage);
+        vapi.off("speech-start", onSpeechStart);
+        vapi.off("speech-end", onSpeechEnd);
+        vapi.off("error", onError);
+    };
+}, []);
 
-        }
-
-    },[])
 
         const toggleMicrophone =()=>{
             const isMuted= vapi.isMuted();
@@ -76,18 +81,19 @@ const handleDisconnect= async ()=>{
 }
 
 const handleCall = async ()=>{
+    console.log('starting call');
     setCallstatus(CallStatus.CONNECTING);
 
     const assistantOverrides ={
         variableValues:{subject, topic, style},
         clientMessages:['transcript'],
-        serverMessages:[]
+        serverMessages:['transcript']
 
     } 
     // @ts-expect-error
     vapi.start(configureAssistant(voice, style), assistantOverrides);
 
-
+ console.log('assistant overides', assistantOverrides);
 }
 
     return (
@@ -110,7 +116,7 @@ const handleCall = async ()=>{
                     <Image src={userImage} alt={userName} width={135} height={135} className='rounded-lg'/>
                     <p className='font-bold text-2xl' >{userName}</p>
                 </div>
-                <button className='btn-mic' onClick={toggleMicrophone}>
+                <button className='btn-mic' onClick={toggleMicrophone} disabled={callStatus !== CallStatus.ACTIVE}>
                     <Image src={isMuted ? '/icons/mic-off.svg':'/icons/mic-on.svg'} alt='mic' width={36} height={36}/>
                     <p className='max-sm:hidden'>{isMuted ? 'Turn on microphone':'Turn off microphone'}</p>
                 </button>
@@ -126,9 +132,25 @@ const handleCall = async ()=>{
             </div>
         </section>
         <section className='transcript'>
-            <div className='transcript-message no-scrollbar'>
-                Messages
-            </div>
+             <div className="transcript-message no-scrollbar">
+                    {messages.map((message, index) => {
+                        if(message.role === 'assistant') {
+                            return (
+                                <p key={index} className="max-sm:text-sm">
+                                    {
+                                        name
+                                            .split(' ')[0]
+                                            .replace(/[.,]/g, '')
+                                    }: {message.content}
+                                </p>
+                            )
+                        } else {
+                           return <p key={index} className="text-primary max-sm:text-sm">
+                                {userName}: {message.content}
+                            </p>
+                        }
+                    })}
+                </div>
             <div className='transcript-fade'></div>
 
         </section>
