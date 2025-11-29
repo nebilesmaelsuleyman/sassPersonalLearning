@@ -29,7 +29,7 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
 
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
-                            <p className="font-bold text-2xl">
+                            <p className="text-2xl">
                                 {name}
                             </p>
                             <div className="subject-badge max-sm:hidden">
