@@ -8,6 +8,7 @@ import { useEffect,useRef ,useState } from 'react'
 import soundWaves from '@/constants/soundwaves.json'
 import Image from 'next/image';
 import Lottie, {LottieRefCurrentProps} from "lottie-react";
+import { addToSessionHistory } from '@/lib/actions/companion_action';
 enum CallStatus {
     INACTIVE = 'INACTIVE',
     CONNECTING = 'CONNECTING',
@@ -35,7 +36,10 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
 
    useEffect(() => {
     const onCallStart = () => setCallstatus(CallStatus.ACTIVE);
-    const onCallEnd = () => setCallstatus(CallStatus.FINISHED);
+    const onCallEnd = () => {setCallstatus(CallStatus.FINISHED)
+        // add session history
+       addToSessionHistory(companionId)
+    };
 
     const onMessage = (message) => {
         if (message.type === "transcript" && message.final === true) {

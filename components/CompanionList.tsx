@@ -14,6 +14,7 @@ import {cn, getSubjectColor} from "@/lib/utils";
   companions?:Companion[];
   className?:string
  }
+ 
  import Link from 'next/link'
  import Image from 'next/image'
 const CompanionList = ({title, companions, className}:companionsListprops) => {

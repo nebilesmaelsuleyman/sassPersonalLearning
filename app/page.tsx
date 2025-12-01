@@ -3,45 +3,35 @@ import CompanionList from '@/components/CompanionList'
 import { recentSessions } from '@/constants'
 import NavBar from '@/components/NavBar'
 import CTA from '@/components/CTA'
-const Page = () => {
+import { getSubjectColor } from '@/lib/utils'
+
+import { getAllCompanions, getRecentSessions } from '@/lib/actions/companion_action'
+const Page = async() => {
+
+  const companions= await getAllCompanions({limit:3});
+  const recentSessionsCompanions= await getRecentSessions()
+
+
   return (
     <main>
       
       <h1>Popular Companions </h1>
       <section className="flex gap-4">
-        <CompanionCard
-          id="123"
-          name="Neural The Brainy Explorer"
-          topic="Neural Networks f the Brain"
-          subject=" science"
-          duration={45}
-          color='#ffda6e'
-        />
-        <CompanionCard
-          id="133"
-          name="Neural The Brainy Explorer"
-          topic="Neural Networks f the Brain"
-          subject=" science"
-          duration={45}
-          color='green'
-      
-
-        />
-        <CompanionCard
-          id="125"
-          name="Neural The Brainy Explorer"
-          topic="Neural Networks f the Brain"
-          subject=" science"
-          duration={45}
-          color='#blue'
-        />
+       {companions.map((companion) => (
+    <CompanionCard
+      key={companion.id}
+      {...companion}
+      color={getSubjectColor(companion.subject)}
+    />
+  ))}
+        
 
       </section>
 
       <section className='home-section'>
         <CompanionList 
         title='Recently completed sessions'
-        companions={recentSessions}
+        companions={recentSessionsCompanions}
         className='w-2/3 max-lg:w-full'
         
         />
