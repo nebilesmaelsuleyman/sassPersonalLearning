@@ -77,35 +77,12 @@ if(!user)redirect('/sign-in')
         </AccordionContent>
       
       </AccordionItem>
-      <AccordionItem value="item-2" className={undefined} >
-        <AccordionTrigger className={undefined}>Shipping Details</AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>
-            We offer worldwide shipping through trusted courier partners.
-            Standard delivery takes 3-5 business days, while express shipping
-            ensures delivery within 1-2 business days.
-          </p>
-          <p>
-            All orders are carefully packaged and fully insured. Track your
-            shipment in real-time through our dedicated tracking portal.
-          </p>
+      <AccordionItem value="companion" className={undefined} >
+        <AccordionTrigger className='text-2xl font-bold'>My Companions {`(${companions.length})`}</AccordionTrigger>
+        <AccordionContent className="">
+          <CompanionList title='My Companions ' companions={companions}/>
         </AccordionContent>
       
-      </AccordionItem>
-      <AccordionItem value="item-3" className={undefined}>
-        <AccordionTrigger className={undefined}>Return Policy</AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>
-            We stand behind our products with a comprehensive 30-day return
-            policy. If you&apos;re not completely satisfied, simply return the
-            item in its original condition.
-          </p>
-          <p>
-            Our hassle-free return process includes free return shipping and
-            full refunds processed within 48 hours of receiving the returned
-            item.
-          </p>
-        </AccordionContent>
       </AccordionItem>
     </Accordion>
    </main>
