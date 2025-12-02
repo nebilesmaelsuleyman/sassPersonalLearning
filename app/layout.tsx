@@ -26,7 +26,7 @@ export default function RootLayout({
      
       <body 
      
-      className={`${bricolage.variable} antialiased`}>
+      className={`${bricolage.variable} antialiased  `}>
       <NavBar />
       {children}
       <Toaster richColors position='top-right'/>

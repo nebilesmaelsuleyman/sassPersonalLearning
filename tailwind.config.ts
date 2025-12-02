@@ -6,7 +6,12 @@ export default {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        // 2. Define your new utility, e.g., 'bg-radial'
+        'radial': 'radial-gradient(circle at center, var(--tw-gradient-stops))',
+      },
+    },
   },
   plugins: [],
 };

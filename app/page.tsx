@@ -13,7 +13,7 @@ const Page = async() => {
 
 
   return (
-    <main>
+    <main className=''>
       
       <h1>Popular Companions </h1>
       <section className="flex gap-4">
