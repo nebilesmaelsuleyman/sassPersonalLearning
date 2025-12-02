@@ -121,6 +121,7 @@ export const newCompanionPermissions= async ()=>{
 }
 export const addToBookmark= async (companionId:string, path:string)=>{
     const {userId}= await auth();
+    console.log('userid from addtbookmark',userId, 'companionid', companionId)
 
     const supabase= createSupabaseClient();
 
@@ -130,4 +131,22 @@ export const addToBookmark= async (companionId:string, path:string)=>{
 
     revalidatePath(path);
     return data;
+}
+export const removeBookmark= async ()=>{
+
+    const {userId}= await auth();
+
+    const supabase= createSupabaseClient();
+    const {data, error}= await supabase.from ('bookmark').delete().eq('user_id', userId)
+    if(error) throw new Error (error.message)
+        return data;
+
+}
+export const getBookmarkedCompanions= async (userId:string)=>{
+    
+    const supabase= createSupabaseClient();
+    const {data, error}= await supabase.from('bookmark').select(`companions:companion_id (*)`).eq('user_id', userId)
+    if(error) throw new Error (error.message)
+        console.log(data)
+    return data?.map(({companions})=>companions);
 }

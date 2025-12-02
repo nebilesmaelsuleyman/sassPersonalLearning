@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation';
 import { getUserCompanion ,getUserSessions } from '@/lib/actions/companion_action';
 import Image from 'next/image';
 import CompanionList from '@/components/CompanionList';
+import { getBookmarkedCompanions } from '@/lib/actions/companion_action';
 
 const profile=async  () =>{
 const user= await currentUser();
@@ -18,6 +19,7 @@ if(!user)redirect('/sign-in')
 
   const companions= await getUserCompanion(user.id);
   const sessionHistory= await getUserSessions(user.id);
+  const bookmarkedCompanions= await  getBookmarkedCompanions(user.id);
 
   return (
    <main className='min-lg:w-3/4'>
@@ -66,8 +68,18 @@ if(!user)redirect('/sign-in')
       type="multiple"
       collapsible
       className="w-full"
-      defaultValue="item-1"
+     
     >
+       <AccordionItem value="bookmark" className={undefined}>
+        <AccordionTrigger className="text-2xl font-bold">BookMark Companions {`(${bookmarkedCompanions.length})`}</AccordionTrigger>
+      
+        <AccordionContent className="flex flex-col gap-4 text-balance">
+           <CompanionList 
+           title= "bookmarked companion"
+           companions={bookmarkedCompanions}/>
+        </AccordionContent>
+      
+      </AccordionItem>
       <AccordionItem value="recent" className={undefined}>
         <AccordionTrigger className="text-2xl font-bold">Recent Sessions</AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
