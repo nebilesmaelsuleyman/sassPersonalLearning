@@ -1,3 +1,3 @@
 This is a SaaS-based web application built with Clerk for secure authentication and Vapi for real-time voice AI interaction. The platform allows users to create their own custom subjects or topics and interact with an AI agent entirely through voice. Users can define what they want to learn or discuss and have natural, real-time voice conversations with an intelligent assistant. The app is designed for interactive learning, practice, and productivity using modern AI-driven voice technology.
 
-LInk sass-personal-learning.vercel.app
+LInk [sass-personal-learning.vercel.app](https://sass-personal-learning-j1g95i6ia-nebil-esmaels-projects.vercel.app/)
