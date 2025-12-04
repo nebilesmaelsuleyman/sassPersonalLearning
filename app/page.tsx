@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import CompanionCard from '@/components/CompanionCard'
 import CompanionList from '@/components/CompanionList'
 import { recentSessions } from '@/constants'
