@@ -8,7 +8,9 @@ export default function SubscriptionPage() {
         <h1 className="text-3xl font-bold text-foreground">Pricing</h1>
         <p className="text-muted-foreground mt-1">Choose the plan that fits your learning goals.</p>
       </div>
-      <PricingTable />
+      <div className="pricing-grid w-full">
+        <PricingTable />
+      </div>
     </main>
   )
 }
