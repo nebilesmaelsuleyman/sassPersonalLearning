@@ -1,104 +1,173 @@
-import React from 'react'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getUserCompanion ,getUserSessions } from '@/lib/actions/companion_action';
+import {
+  getUserCompanion,
+  getUserSessions,
+  getBookmarkedCompanions,
+} from '@/lib/actions/companion_action';
 import Image from 'next/image';
-import CompanionList from '@/components/CompanionList';
-import { getBookmarkedCompanions } from '@/lib/actions/companion_action';
+import { JourneyLessonCard } from '@/components/JourneyLessonCard';
+import { Bookmark, Clock, BookOpen, GraduationCap } from 'lucide-react';
 
-const profile=async  () =>{
-const user= await currentUser();
+type LessonRow = { id: string; name: string; subject: string; topic: string; duration?: number };
 
-if(!user)redirect('/sign-in')
+export default async function MyJourneyPage() {
+  const user = await currentUser();
+  if (!user) redirect('/sign-in');
 
-  const companions= await getUserCompanion(user.id);
-  const sessionHistory= await getUserSessions(user.id);
-  const bookmarkedCompanions= await  getBookmarkedCompanions(user.id);
+  const [companions, sessionHistory, bookmarkedCompanions] = await Promise.all([
+    getUserCompanion(user.id),
+    getUserSessions(user.id, 20),
+    getBookmarkedCompanions(user.id),
+  ]);
+
+  const sessions = (sessionHistory ?? []) as unknown as LessonRow[];
+  const bookmarked = (bookmarkedCompanions ?? []) as unknown as LessonRow[];
+  const myCompanions = (companions ?? []) as unknown as LessonRow[];
+
+  const email = user.emailAddresses?.[0]?.emailAddress ?? '';
 
   return (
-   <main className='min-lg:w-3/4'>
-    <section className='flex justify-between gap-4 max-sm:flex-col items-center'>
-         <div className="flex gap-4 items-center">
-          <Image
-            src={user.imageUrl}
-            alt={user.firstName!}
-            width={110}
-            height={110}
-          />
-          <div className="flex flex-col gap-2">
-            <h1 className="font-bold text-2xl">
-              {user.firstName} {user.lastName}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {user.emailAddresses[0].emailAddress}
-            </p>
-          </div>
-        </div>
-       <div className="flex gap-4">
-          <div className="border border-black rouded-lg p-3 gap-2 flex flex-col h-fit">
-            <div className="flex gap-2 items-center">
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      {/* Profile card */}
+      <section className="mb-10 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted">
               <Image
-                src="/icons/check.svg"
-                alt="checkmark"
-                width={22}
-                height={22}
+                src={user.imageUrl}
+                alt={user.firstName ?? 'User'}
+                fill
+                className="object-cover"
+                sizes="80px"
               />
-              <p className="text-2xl font-bold">{sessionHistory.length}</p>
             </div>
-            <div>Lessons completed</div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {user.firstName} {user.lastName}
+              </h1>
+              <p className="text-sm text-muted-foreground">{email}</p>
+            </div>
           </div>
-          <div className="border border-black rouded-lg p-3 gap-2 flex flex-col h-fit">
-            <div className="flex gap-2 items-center">
-              <Image src="/icons/cap.svg" alt="cap" width={22} height={22} />
-              <p className="text-2xl font-bold">{companions.length}</p>
+          <div className="flex flex-wrap gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xl font-bold tabular-nums text-foreground">
+                  {sessions.length}
+                </p>
+                <p className="text-xs text-muted-foreground">Lessons completed</p>
+              </div>
             </div>
-            <div>Companions created</div>
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/20">
+                <BookOpen className="h-5 w-5 text-chart-2" />
+              </div>
+              <div>
+                <p className="text-xl font-bold tabular-nums text-foreground">
+                  {myCompanions.length}
+                </p>
+                <p className="text-xs text-muted-foreground">Companions created</p>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-    </section>
-   
-    <Accordion
-      type="multiple"
-      collapsible
-      className="w-full"
-     
-    >
-       <AccordionItem value="bookmark" className={undefined}>
-        <AccordionTrigger className="text-2xl font-bold">BookMark Companions {`(${bookmarkedCompanions.length})`}</AccordionTrigger>
-      
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-           <CompanionList 
-           title= "bookmarked companion"
-           companions={bookmarkedCompanions}/>
-        </AccordionContent>
-      
-      </AccordionItem>
-      <AccordionItem value="recent" className={undefined}>
-        <AccordionTrigger className="text-2xl font-bold">Recent Sessions</AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-           <CompanionList 
-           title= "Recent Sessions"
-           companions={sessionHistory}/>
-        </AccordionContent>
-      
-      </AccordionItem>
-      <AccordionItem value="companion" className={undefined} >
-        <AccordionTrigger className='text-2xl font-bold'>My Companions {`(${companions.length})`}</AccordionTrigger>
-        <AccordionContent className="">
-          <CompanionList title='My Companions ' companions={companions}/>
-        </AccordionContent>
-      
-      </AccordionItem>
-    </Accordion>
-   </main>
-  )
+      {/* Section: Bookmarked */}
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-2">
+          <Bookmark className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">
+            Bookmarked ({bookmarked.length})
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+          {bookmarked.length > 0 ? (
+            <ul className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+              {bookmarked.map((c) => (
+                <li key={c.id}>
+                  <JourneyLessonCard
+                    id={c.id}
+                    name={c.name}
+                    subject={c.subject}
+                    topic={c.topic}
+                    duration={c.duration}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              No bookmarks yet. Save lessons from the Courses page to see them here.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Section: Recent sessions */}
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-2">
+          <Clock className="h-5 w-5 text-chart-2" />
+          <h2 className="text-lg font-semibold text-foreground">
+            Recent sessions
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+          {sessions.length > 0 ? (
+            <ul className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+              {sessions.map((c) => (
+                <li key={c.id}>
+                  <JourneyLessonCard
+                    id={c.id}
+                    name={c.name}
+                    subject={c.subject}
+                    topic={c.topic}
+                    duration={c.duration}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              No sessions yet. Start a lesson from Courses to see recent activity here.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Section: My companions */}
+      <section>
+        <div className="mb-4 flex items-center gap-2">
+          <GraduationCap className="h-5 w-5 text-chart-4" />
+          <h2 className="text-lg font-semibold text-foreground">
+            My companions ({myCompanions.length})
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+          {myCompanions.length > 0 ? (
+            <ul className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+              {myCompanions.map((c) => (
+                <li key={c.id}>
+                  <JourneyLessonCard
+                    id={c.id}
+                    name={c.name}
+                    subject={c.subject}
+                    topic={c.topic}
+                    duration={c.duration}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              You haven’t created any companions yet. Create one from the Courses page.
+            </p>
+          )}
+        </div>
+      </section>
+    </main>
+  );
 }
-
-export default profile

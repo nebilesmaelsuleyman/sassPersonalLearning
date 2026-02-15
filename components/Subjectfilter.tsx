@@ -44,10 +44,10 @@ useEffect(() => {
     if (newUrl && newUrl !== window.location.href) {
       router.push(newUrl, { scroll: false })
     }
-  }, 300)
+  }, 300);
 
-  return () => clearTimeout(timeout)
-}, [selectsubject, searchParams, router])
+  return () => clearTimeout(timeout);
+}, [selectsubject, searchParams, router]);
   
 
 

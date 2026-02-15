@@ -1,47 +1,30 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-import CompanionCard from '@/components/CompanionCard'
-import CompanionList from '@/components/CompanionList'
-import { recentSessions } from '@/constants'
-import NavBar from '@/components/NavBar'
-import CTA from '@/components/CTA'
-import { getSubjectColor } from '@/lib/utils'
+import { HeroSection } from '@/components/landing/HeroSection';
+import { FeatureCards } from '@/components/landing/FeatureCards';
+import { CategoryGrid } from '@/components/landing/CategoryGrid';
+import { PopularCourses } from '@/components/landing/PopularCourses';
+import { LandingCTA } from '@/components/landing/LandingCTA';
+import { getAllCompanions } from '@/lib/actions/companion_action';
 
-import { getAllCompanions, getRecentSessions } from '@/lib/actions/companion_action'
-const Page = async() => {
-
-  const companions= await getAllCompanions({limit:3});
-  const recentSessionsCompanions= await getRecentSessions()
-
+export default async function HomePage() {
+  let companions: Awaited<ReturnType<typeof getAllCompanions>> = [];
+  try {
+    companions = await getAllCompanions({ limit: 4 });
+  } catch {
+    // Supabase or network error; show rest of landing with empty courses
+  }
 
   return (
-    <main className=''>
-      
-      <h1>Popular Companions </h1>
-      <section className="flex gap-4">
-       {companions.map((companion) => (
-    <CompanionCard
-      key={companion.id}
-      {...companion}
-      color={getSubjectColor(companion.subject)}
-    />
-  ))}
-        
-
+    <main className="flex flex-col gap-16 pb-8">
+      <HeroSection />
+      <section id="features" className="flex flex-col gap-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">Why learn with Hayyu</h2>
+        <FeatureCards />
       </section>
-
-      <section className='home-section'>
-        <CompanionList 
-        title='Recently completed sessions'
-        companions={recentSessionsCompanions}
-        className='w-2/3 max-lg:w-full'
-        
-        />
-        <CTA/>
-      </section>
-      </main>
-    
-  )
+      <CategoryGrid />
+      <PopularCourses companions={companions} />
+      <LandingCTA />
+    </main>
+  );
 }
-
-export default Page
