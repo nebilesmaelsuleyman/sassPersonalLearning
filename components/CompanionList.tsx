@@ -22,7 +22,7 @@ const CompanionList = ({title, companions, className}:companionsListprops) => {
 
   return (
    <article className={cn('companion-list', className)}>
-    <h2>{title}</h2>
+    {title ? <h2>{title}</h2> : null}
     <Table className={undefined}>
 
   <TableHeader className={undefined}>

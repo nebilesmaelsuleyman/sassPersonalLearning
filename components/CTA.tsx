@@ -7,11 +7,11 @@ const CTA = () => {
         <div className='cta-badge'>start learning your way</div>
         <h2 className='text-3xl font-bold'> Build and personlize learning companion</h2>
         <p className='text-lg'>Create your own AI-powered learning companion tailored to your unique needs and preferences.</p>
-        <Image src= 'images/cta.svg' alt='cta' width={362} height={362}/>
-        <button className='btn-primary'>
+        <Image src='/images/cta.svg' alt='cta' width={362} height={362}/>
+        <Link href='/companions/new' className='btn-primary inline-flex'>
             <Image src='/icons/plus.svg' alt='plus' width={12} height={12}/>
-            <Link href='/companions/new'><p>Build a new  companion</p></Link>
-        </button>
+            <span>Build a new companion</span>
+        </Link>
      </section>
   )
 }

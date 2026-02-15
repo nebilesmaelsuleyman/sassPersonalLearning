@@ -8,7 +8,10 @@ import { useEffect,useRef ,useState } from 'react'
 import soundWaves from '@/constants/soundwaves.json'
 import Image from 'next/image';
 import Lottie, {LottieRefCurrentProps} from "lottie-react";
-import { addToSessionHistory } from '@/lib/actions/companion_action';
+import { addToSessionHistory, updateSessionTranscript } from '@/lib/actions/companion_action';
+import { CompanionChat } from '@/components/CompanionChat';
+import { Mic, MessageSquare } from 'lucide-react';
+
 enum CallStatus {
     INACTIVE = 'INACTIVE',
     CONNECTING = 'CONNECTING',
@@ -22,7 +25,10 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
     const [isSpeaking, setIsSpeaking]= useState(false);
     const lottiRef= useRef<LottieRefCurrentProps>(null);
     const [isMuted, setIsMuted]= useState(false);
-    const [messages, setMessages]= useState([]);
+    const [messages, setMessages]= useState<{ role: string; content: string }[]>([]);
+    const messagesRef = useRef<{ role: string; content: string }[]>([]);
+    const [tab, setTab] = useState<'voice' | 'chat'>('voice');
+    useEffect(() => { messagesRef.current = messages; }, [messages]);
      useEffect(()=>{
         if(lottiRef){
             if(isSpeaking){
@@ -36,9 +42,17 @@ const CompanionComponets = ({companionId, subject ,topic, name ,userName, userIm
 
    useEffect(() => {
     const onCallStart = () => setCallstatus(CallStatus.ACTIVE);
-    const onCallEnd = () => {setCallstatus(CallStatus.FINISHED)
-        // add session history
-       addToSessionHistory(companionId)
+    const onCallEnd = async () => {
+        setCallstatus(CallStatus.FINISHED);
+        const latestMessages = messagesRef.current;
+        try {
+            const session = await addToSessionHistory(companionId);
+            if (session?.id && latestMessages.length > 0) {
+                await updateSessionTranscript(session.id, latestMessages);
+            }
+        } catch (e) {
+            console.error('Failed to save session/transcript', e);
+        }
     };
 
     const onMessage = (message) => {
@@ -100,65 +114,119 @@ const handleCall = async ()=>{
  console.log('assistant overides', assistantOverrides);
 }
 
+    const companionShortName = name.split(' ')[0].replace(/[.,]/g, '');
+
     return (
-        <section className='flex flex-col h-[70vh]'>
-        <section className='flex gap-8 mx-sm:flex-col'>
-            <div className='companion-section'>
-                <div className='companion-avatar' style={{backgroundColor:getSubjectColor(subject)}}>
-                    <div className={cn('absolute transition-opacity duration-1000',callStatus === CallStatus.FINISHED || callStatus=== CallStatus.INACTIVE ? 'opacity-100':'opacity-0' , callStatus=== CallStatus.CONNECTING && 'opacity-100 animate-pulse')} >
-                            <Image src={`/icons/${subject}.svg`} alt='photo' width={50} height={50}/>
-                    </div>
-                    <div className={cn('absolute transition-opacity duration-1000',callStatus === CallStatus.ACTIVE ? 'opacity-100':'opacity-0')}>
-                        <Lottie lottieRef={lottiRef} animationData={soundWaves} autoplay={false} className='companion-lottie'/>
-                    </div>
-
-                </div>
-                <p className='font-bold text-2xl'>{name}</p>
-            </div>
-            <div className='user-section'>
-                <div className ='user-avatar'>
-                    <Image src={userImage} alt={userName} width={135} height={135} className='rounded-lg'/>
-                    <p className='font-bold text-2xl' >{userName}</p>
-                </div>
-                <button className='btn-mic' onClick={toggleMicrophone} disabled={callStatus !== CallStatus.ACTIVE}>
-                    <Image src={isMuted ? '/icons/mic-off.svg':'/icons/mic-on.svg'} alt='mic' width={36} height={36}/>
-                    <p className='max-sm:hidden'>{isMuted ? 'Turn on microphone':'Turn off microphone'}</p>
+        <section className="flex flex-col rounded-2xl border border-border bg-card overflow-hidden">
+            {/* Mode switcher: Voice | Chat */}
+            <div className="flex p-1.5 gap-1 bg-muted/50 border-b border-border">
+                <button
+                    type="button"
+                    onClick={() => setTab('voice')}
+                    className={cn(
+                        'flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all',
+                        tab === 'voice'
+                            ? 'bg-card text-foreground shadow-sm border border-border'
+                            : 'text-muted-foreground hover:text-foreground'
+                    )}
+                >
+                    <Mic className="w-4 h-4" /> Voice session
                 </button>
-                <button className={cn('rounded-lg py-2 cursor-pointer transition-colors w-full text-white', callStatus ===CallStatus.ACTIVE ? 'bg-red-700' : 'bg-primary', callStatus === CallStatus.CONNECTING && 'animate-pulse')} onClick={callStatus === CallStatus.ACTIVE ? handleDisconnect : handleCall}>
-                        {callStatus === CallStatus.ACTIVE
-                        ? "End Session"
-                        : callStatus === CallStatus.CONNECTING
-                            ? 'Connecting'
-                        : 'Start Session'
-                        }
-                    </button>
-
+                <button
+                    type="button"
+                    onClick={() => setTab('chat')}
+                    className={cn(
+                        'flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all',
+                        tab === 'chat'
+                            ? 'bg-card text-foreground shadow-sm border border-border'
+                            : 'text-muted-foreground hover:text-foreground'
+                    )}
+                >
+                    <MessageSquare className="w-4 h-4" /> Text chat
+                </button>
             </div>
-        </section>
-        <section className='transcript'>
-             <div className="transcript-message no-scrollbar">
-                    {messages.map((message, index) => {
-                        if(message.role === 'assistant') {
-                            return (
-                                <p key={index} className="max-sm:text-sm">
-                                    {
-                                        name
-                                            .split(' ')[0]
-                                            .replace(/[.,]/g, '')
-                                    }: {message.content}
-                                </p>
-                            )
-                        } else {
-                           return <p key={index} className="text-primary max-sm:text-sm">
-                                {userName}: {message.content}
-                            </p>
-                        }
-                    })}
-                </div>
-            <div className='transcript-fade'></div>
 
+            {tab === 'chat' ? (
+                <div className="flex-1 min-h-[420px]">
+                    <CompanionChat name={name} subject={subject} topic={topic} style={style} userName={userName} />
+                </div>
+            ) : (
+                <div className="flex flex-col lg:flex-row gap-6 p-6 min-h-[420px]">
+                    {/* Voice: Companion + You side by side */}
+                    <div className="flex flex-col sm:flex-row lg:flex-col gap-6 lg:max-w-[280px] shrink-0">
+                        <div className="rounded-2xl border border-border bg-muted/30 p-5 flex flex-col items-center gap-3">
+                            <div className="relative w-20 h-20 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: getSubjectColor(subject) }}>
+                                <div className={cn('absolute inset-0 flex items-center justify-center transition-opacity duration-300', (callStatus === CallStatus.FINISHED || callStatus === CallStatus.INACTIVE) ? 'opacity-100' : 'opacity-0', callStatus === CallStatus.CONNECTING && 'opacity-100 animate-pulse')}>
+                                    <Image src={`/icons/${subject}.svg`} alt="" width={40} height={40} />
+                                </div>
+                                <div className={cn('absolute inset-0 flex items-center justify-center transition-opacity duration-300', callStatus === CallStatus.ACTIVE ? 'opacity-100' : 'opacity-0')}>
+                                    <Lottie lottieRef={lottiRef} animationData={soundWaves} autoplay={false} className="w-full h-full" />
+                                </div>
+                            </div>
+                            <p className="font-semibold text-foreground text-center">{name}</p>
+                            <span className="text-xs text-muted-foreground">
+                                {callStatus === CallStatus.INACTIVE && 'Start to begin'}
+                                {callStatus === CallStatus.CONNECTING && 'Connecting…'}
+                                {callStatus === CallStatus.ACTIVE && (isSpeaking ? 'Speaking…' : 'Listening')}
+                                {callStatus === CallStatus.FINISHED && 'Session ended'}
+                            </span>
+                        </div>
+                        <div className="rounded-2xl border border-border bg-muted/30 p-5 flex flex-col items-center gap-4">
+                            <Image src={userImage} alt={userName} width={72} height={72} className="rounded-xl object-cover" />
+                            <p className="font-semibold text-foreground">{userName}</p>
+                            <button
+                                type="button"
+                                onClick={toggleMicrophone}
+                                disabled={callStatus !== CallStatus.ACTIVE}
+                                className={cn(
+                                    'w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium border transition-colors',
+                                    callStatus !== CallStatus.ACTIVE ? 'opacity-50 cursor-not-allowed border-border bg-muted/50' : 'border-border bg-card hover:bg-accent'
+                                )}
+                            >
+                                <Image src={isMuted ? '/icons/mic-off.svg' : '/icons/mic-on.svg'} alt="" width={20} height={20} />
+                                {isMuted ? 'Unmute' : 'Mute'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={callStatus === CallStatus.ACTIVE ? handleDisconnect : handleCall}
+                                disabled={callStatus === CallStatus.CONNECTING}
+                                className={cn(
+                                    'w-full rounded-xl py-3 text-sm font-semibold transition-all',
+                                    callStatus === CallStatus.ACTIVE && 'bg-red-600 hover:bg-red-700 text-white',
+                                    (callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED) && 'bg-primary text-primary-foreground hover:opacity-90',
+                                    callStatus === CallStatus.CONNECTING && 'bg-muted text-muted-foreground cursor-wait animate-pulse'
+                                )}
+                            >
+                                {callStatus === CallStatus.ACTIVE ? 'End session' : callStatus === CallStatus.CONNECTING ? 'Connecting…' : 'Start voice session'}
+                            </button>
+                        </div>
+                    </div>
+                    {/* Live transcript */}
+                    <div className="flex-1 flex flex-col min-h-0 rounded-2xl border border-border bg-muted/20">
+                        <div className="px-4 py-2 border-b border-border">
+                            <p className="text-sm font-medium text-foreground">Live transcript</p>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 no-scrollbar">
+                            {messages.length === 0 && (
+                                <p className="text-sm text-muted-foreground">Transcript will appear here when you start the session.</p>
+                            )}
+                            {messages.map((message, index) => (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        'rounded-2xl px-4 py-2.5 max-w-[90%]',
+                                        message.role === 'assistant' ? 'bg-card border border-border self-start' : 'bg-primary text-primary-foreground self-end'
+                                    )}
+                                >
+                                    <span className="text-xs font-medium opacity-80">{message.role === 'assistant' ? companionShortName : userName}</span>
+                                    <p className="text-sm mt-0.5 whitespace-pre-wrap">{message.content}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
-    </section>
     )
     
   
